@@ -17,6 +17,33 @@ background:radial-gradient(ellipse at 50% 0%,rgba(0,212,255,0.06) 0%,transparent
 #app{position:relative;z-index:1;max-width:600px;margin:0 auto;
 padding:0 16px calc(env(safe-area-inset-bottom,0px) + 40px);}
 
+/* ── SETUP SCREEN ── */
+#setup{position:fixed;inset:0;background:#04070f;z-index:100;
+display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 24px;}
+#setup.hidden{display:none;}
+.setup-logo{font-size:64px;font-weight:900;letter-spacing:-3px;
+background:linear-gradient(135deg,#fff 0%,#00D4FF 50%,#fff 100%);
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+background-clip:text;margin-bottom:8px;}
+.setup-sub{font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.3);margin-bottom:36px;}
+.setup-box{width:100%;max-width:340px;background:rgba(255,255,255,0.03);
+border:1px solid rgba(0,212,255,0.2);border-radius:16px;padding:24px;}
+.setup-label{font-size:10px;letter-spacing:2px;color:#00D4FF;margin-bottom:8px;}
+.setup-desc{font-size:11px;color:rgba(255,255,255,0.4);line-height:1.6;margin-bottom:16px;}
+.setup-input{width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(0,212,255,0.3);
+border-radius:8px;padding:12px 14px;color:#fff;font-size:13px;
+font-family:'Courier New',monospace;outline:none;margin-bottom:12px;
+letter-spacing:1px;}
+.setup-input::placeholder{color:rgba(255,255,255,0.2);letter-spacing:0;}
+.setup-btn{width:100%;background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.4);
+color:#00D4FF;padding:13px;border-radius:8px;cursor:pointer;
+font-size:12px;letter-spacing:3px;font-family:'Courier New',monospace;}
+.setup-link{font-size:11px;color:rgba(255,255,255,0.3);margin-top:16px;text-align:center;line-height:1.6;}
+.setup-link a{color:#00D4FF;text-decoration:none;}
+.setup-err{font-size:11px;color:#FF6B35;margin-top:8px;display:none;}
+.setup-err.show{display:block;}
+
+/* ── MAIN UI ── */
 .header{padding:calc(env(safe-area-inset-top,0px) + 18px) 0 14px;text-align:center;}
 .badge{display:inline-block;font-size:9px;letter-spacing:3px;color:#00D4FF;
 border:1px solid rgba(0,212,255,0.25);padding:4px 14px;border-radius:3px;
@@ -94,12 +121,39 @@ padding:10px 11px;color:#fff;font-size:12px;font-family:'Courier New',monospace;
 .asend{background:var(--g);border:1px solid var(--b);color:var(--c);
 width:40px;height:40px;border-radius:8px;cursor:pointer;font-size:13px;
 display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-
-.footer{text-align:center;padding:20px 0 8px;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.1);}
+.reset-btn{background:none;border:none;color:rgba(255,255,255,0.15);
+font-size:10px;font-family:'Courier New',monospace;cursor:pointer;
+letter-spacing:1px;margin-top:20px;display:block;width:100%;text-align:center;}
+.footer{text-align:center;padding:8px 0 8px;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.1);}
 </style>
 </head>
 <body>
-<div id="app">
+
+<!-- SETUP SCREEN -->
+<div id="setup">
+  <div class="setup-logo">JARVIS</div>
+  <div class="setup-sub">EXECUTIVE INTELLIGENCE SYSTEM</div>
+  <div class="setup-box">
+    <div class="setup-label">◆ API KEY ERFORDERLICH</div>
+    <div class="setup-desc">
+      JARVIS benötigt einen Anthropic API Key um zu funktionieren.<br><br>
+      Den Key bekommst du kostenlos auf:<br>
+      <strong style="color:#00D4FF">console.anthropic.com</strong><br><br>
+      Der Key wird nur lokal auf deinem Gerät gespeichert.
+    </div>
+    <input class="setup-input" id="key-input" type="password"
+      placeholder="sk-ant-api03-..." autocomplete="off" autocorrect="off" spellcheck="false"/>
+    <div class="setup-err" id="setup-err">❌ Ungültiger Key – bitte prüfen.</div>
+    <button class="setup-btn" onclick="saveKey()">▶ &nbsp;JARVIS STARTEN</button>
+    <div class="setup-link">
+      Noch kein Key? → <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a><br>
+      Registrierung kostenlos · ca. $5 Guthaben zum Testen
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;">
   <div class="header">
     <div class="badge">◉ JARVIS ONLINE · 7 AGENTS ACTIVE</div>
     <div class="logo">JARVIS</div>
@@ -107,7 +161,8 @@ display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   </div>
 
   <div class="ios-hint" id="ios-hint">
-    📲 <strong style="color:#00D4FF">Homescreen-Icon:</strong> Tippe <strong>Teilen (□↑)</strong> → <strong>„Zum Home-Bildschirm"</strong>
+    📲 <strong style="color:#00D4FF">Homescreen-Icon:</strong>
+    Tippe <strong>Teilen (□↑)</strong> → <strong>„Zum Home-Bildschirm"</strong>
   </div>
 
   <div class="clock-card">
@@ -155,9 +210,12 @@ display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   <div class="sec-lbl">◆ INTELLIGENCE AGENTS — TIPPEN ZUM AKTIVIEREN</div>
   <div id="alist"></div>
 
+  <button class="reset-btn" onclick="resetKey()">⚙ API Key zurücksetzen</button>
   <div class="footer">JARVIS · EXECUTIVE AI · ALWAYS ON</div>
 </div>
+
 <script>
+// ── CONFIG ───────────────────────────────────────────
 const P={
   name:"Chef",
   job:"Head of eCommerce Business & stellv. Abteilungsleiter Partnerschaften (ISVs) bei TeleCash from Fiserv",
@@ -165,59 +223,91 @@ const P={
 };
 
 const AGENTS=[
-  {id:"briefing",icon:"⚡",name:"DAILY BRIEF",sub:"Tages-Briefing",c:"#00D4FF",g:"rgba(0,212,255,0.08)",b:"rgba(0,212,255,0.22)",auto:true,
-   sys:`Du bist JARVIS, Executive Assistant von ${P.name}. Morning Briefing auf Deutsch. Profil: ${P.job}. Rollen: ${P.roles.join(", ")}.\nFormat max 160 Wörter:\n🎯 TOP 3 PRIORITÄTEN\n💼 BUSINESS FOCUS\n👨‍👩‍👧‍👦 FAMILIE\n🏒 TRAINER TIP\n📈 MARKT-IMPULS\n🌍 HORIZONT`,
+  {id:"briefing",icon:"⚡",name:"DAILY BRIEF",sub:"Tages-Briefing",c:"#00D4FF",g:"rgba(0,212,255,0.08)",b:"rgba(0,212,255,0.22)",
+   sys:`Du bist JARVIS, Executive Assistant von ${P.name}. Morning Briefing auf Deutsch.\nProfil: ${P.job}.\nRollen: ${P.roles.join(", ")}.\nFormat max 160 Wörter:\n🎯 TOP 3 PRIORITÄTEN\n💼 BUSINESS FOCUS\n👨‍👩‍👧‍👦 FAMILIE\n🏒 TRAINER TIP\n📈 MARKT-IMPULS\n🌍 HORIZONT`,
    msg:`Morning Briefing: ${new Date().toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}`},
-  {id:"exec",icon:"💼",name:"EXEC BRAIN",sub:"eCommerce & ISV",c:"#10B981",g:"rgba(16,185,129,0.08)",b:"rgba(16,185,129,0.22)",auto:false,
-   sys:`Du bist JARVIS Exec Brain für ${P.name}, ${P.job}. Payment, ISV, eCommerce. Deutsch, max 130 Wörter.`,
-   msg:"Wichtigster Tipp heute für TeleCash/Fiserv."},
-  {id:"finance",icon:"📈",name:"WEALTH OPS",sub:"Aktien & Investment",c:"#F59E0B",g:"rgba(245,158,11,0.08)",b:"rgba(245,158,11,0.22)",auto:false,
+  {id:"exec",icon:"💼",name:"EXEC BRAIN",sub:"eCommerce & ISV",c:"#10B981",g:"rgba(16,185,129,0.08)",b:"rgba(16,185,129,0.22)",
+   sys:`Du bist JARVIS Exec Brain für ${P.name}, ${P.job}. Payment, ISV, eCommerce. Deutsch, präzise, max 130 Wörter.`,
+   msg:"Wichtigster strategischer Tipp heute für TeleCash/Fiserv."},
+  {id:"finance",icon:"📈",name:"WEALTH OPS",sub:"Aktien & Investment",c:"#F59E0B",g:"rgba(245,158,11,0.08)",b:"rgba(245,158,11,0.22)",
    sys:`Du bist JARVIS Wealth Ops für ${P.name}. Aktien, Investment (keine Rechtsberatung). Deutsch, max 130 Wörter.`,
    msg:"Investment-Gedanke oder Markt-Impuls heute."},
-  {id:"family",icon:"👨‍👩‍👧‍👦",name:"FAMILY HQ",sub:"Familie & Qualitytime",c:"#FF6B35",g:"rgba(255,107,53,0.08)",b:"rgba(255,107,53,0.22)",auto:false,
+  {id:"family",icon:"👨‍👩‍👧‍👦",name:"FAMILY HQ",sub:"Familie & Qualitytime",c:"#FF6B35",g:"rgba(255,107,53,0.08)",b:"rgba(255,107,53,0.22)",
    sys:`Du bist JARVIS Family HQ für ${P.name}. Manager+Trainer+Familienvater. Deutsch, warm, max 130 Wörter.`,
    msg:"Idee für Qualitytime mit der Familie heute."},
-  {id:"hockey",icon:"🏒",name:"COACH LAB",sub:"Inlinehockey Training",c:"#A855F7",g:"rgba(168,85,247,0.08)",b:"rgba(168,85,247,0.22)",auto:false,
+  {id:"hockey",icon:"🏒",name:"COACH LAB",sub:"Inlinehockey Training",c:"#A855F7",g:"rgba(168,85,247,0.08)",b:"rgba(168,85,247,0.22)",
    sys:`Du bist JARVIS Coach Lab für ${P.name}. Inlinehockey, Taktik, Training. Deutsch, max 130 Wörter.`,
    msg:"Trainingsidee für meine Inlinehockey-Mannschaft."},
-  {id:"cards",icon:"🃏",name:"CARD VAULT",sub:"Pokémon & Fußball Cards",c:"#EC4899",g:"rgba(236,72,153,0.08)",b:"rgba(236,72,153,0.22)",auto:false,
+  {id:"cards",icon:"🃏",name:"CARD VAULT",sub:"Pokémon & Fußball Cards",c:"#EC4899",g:"rgba(236,72,153,0.08)",b:"rgba(236,72,153,0.22)",
    sys:`Du bist JARVIS Card Vault für ${P.name}. Pokémon+Fußball Karten Investment, PSA. Deutsch, max 130 Wörter.`,
    msg:"Sammelkarten-Investment-Tipp heute."},
-  {id:"horizon",icon:"🌍",name:"HORIZON",sub:"Auswanderung & Lifestyle",c:"#06B6D4",g:"rgba(6,182,212,0.08)",b:"rgba(6,182,212,0.22)",auto:false,
+  {id:"horizon",icon:"🌍",name:"HORIZON",sub:"Auswanderung & Lifestyle",c:"#06B6D4",g:"rgba(6,182,212,0.08)",b:"rgba(6,182,212,0.22)",
    sys:`Du bist JARVIS Horizon für ${P.name} (dt. Familie, Senior eCommerce). Dubai, Portugal, Malta, Schweiz, Singapur, Zypern. Deutsch, max 130 Wörter.`,
    msg:"Insight zu einem Top-Auswanderungs-Kandidaten für mein Profil."}
 ];
 
 const S={};
 AGENTS.forEach(a=>S[a.id]={status:"idle",history:[]});
-let busy=false,voices=[];
+let busy=false,voices=[],API_KEY="";
 
-// Clock - every 10s to save CPU
+// ── API KEY ──────────────────────────────────────────
+function saveKey(){
+  const k=document.getElementById("key-input").value.trim();
+  if(!k.startsWith("sk-ant")){
+    document.getElementById("setup-err").classList.add("show");
+    return;
+  }
+  localStorage.setItem("jarvis_key",k);
+  API_KEY=k;
+  startApp();
+}
+
+function resetKey(){
+  if(confirm("API Key löschen und neu eingeben?")){
+    localStorage.removeItem("jarvis_key");
+    location.reload();
+  }
+}
+
+function checkKey(){
+  const k=localStorage.getItem("jarvis_key");
+  if(k&&k.startsWith("sk-ant")){API_KEY=k;return true;}
+  return false;
+}
+
+// Allow Enter key on input
+document.getElementById("key-input").addEventListener("keydown",e=>{
+  if(e.key==="Enter")saveKey();
+});
+
+// ── CLOCK ────────────────────────────────────────────
 function tick(){
   const n=new Date();
-  document.getElementById("clk").textContent=
-    String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0");
+  const h=String(n.getHours()).padStart(2,"0");
+  const m=String(n.getMinutes()).padStart(2,"0");
+  document.getElementById("clk").textContent=h+":"+m;
   document.getElementById("cld").textContent=
     n.toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 }
-setInterval(tick,10000);tick();
 
-// iOS hint
-if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone)
-  document.getElementById("ios-hint").classList.add("show");
+// ── iOS ──────────────────────────────────────────────
+function checkIOS(){
+  if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone)
+    document.getElementById("ios-hint").classList.add("show");
+}
 
-// Voices
+// ── VOICES ───────────────────────────────────────────
 function loadV(){voices=speechSynthesis.getVoices();}
 speechSynthesis.onvoiceschanged=loadV;loadV();
 function bestV(){
-  const w=["Daniel","Google UK English Male","Alex","en-GB"];
-  for(const n of w){const v=voices.find(x=>x.name.includes(n)||x.lang===n);if(v)return v;}
+  const want=["Daniel","Google UK English Male","Alex","en-GB"];
+  for(const n of want){const v=voices.find(x=>x.name.includes(n)||x.lang===n);if(v)return v;}
   return voices.find(v=>v.lang.startsWith("en"))||voices[0]||null;
 }
 
 function speak(text,cb){
   speechSynthesis.cancel();
-  const clean=text.replace(/[\u{1F000}-\u{1FFFF}◌▸◆●◉⬤]/gu,"").trim();
+  const clean=text.replace(/[\u{1F000}-\u{1FFFF}◌▸◆●◉⬤🎯]/gu,"").trim();
   const u=new SpeechSynthesisUtterance(clean);
   u.lang="de-DE";u.rate=0.88;u.pitch=0.65;u.volume=1;
   const v=bestV();if(v)u.voice=v;
@@ -227,13 +317,14 @@ function speak(text,cb){
   speechSynthesis.speak(u);
 }
 
+// ── ORB ──────────────────────────────────────────────
 function setOrb(state){
   document.getElementById("orb").className="orb "+state;
   const s=document.getElementById("orb-st");
-  const wmic=document.getElementById("w-mic");
-  const wmics=document.getElementById("w-mics");
   const wm=document.getElementById("w-mode");
   const wms=document.getElementById("w-msub");
+  const wmic=document.getElementById("w-mic");
+  const wmics=document.getElementById("w-mics");
   if(state==="listening"){
     s.textContent="⬤ HÖRE ZU...";s.className="orb-st on";
     wmic.textContent="HÖRT";wmics.textContent="Sprich jetzt";
@@ -263,12 +354,27 @@ function beep(){
   }catch(e){}
 }
 
+// ── CLAUDE API ────────────────────────────────────────
 async function callClaude(sys,msgs){
   const r=await fetch("https://api.anthropic.com/v1/messages",{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,system:sys,messages:msgs})
+    headers:{
+      "Content-Type":"application/json",
+      "x-api-key":API_KEY,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body:JSON.stringify({
+      model:"claude-haiku-4-5-20251001",
+      max_tokens:600,
+      system:sys,
+      messages:msgs
+    })
   });
+  if(!r.ok){
+    const err=await r.json().catch(()=>({}));
+    throw new Error(err.error?.message||r.status);
+  }
   const d=await r.json();
   return d.content?.map(b=>b.text||"").join("")||"Keine Antwort.";
 }
@@ -278,13 +384,14 @@ Profil: ${P.job}. Rollen: ${P.roles.join(", ")}.
 Antworte immer auf Deutsch. Ruhig, präzise wie JARVIS aus Iron Man. Max 90 Wörter.
 Beginne mit "Zu Ihren Diensten," oder "Natürlich," oder "Verstanden,".`;
 
+// ── ORB TAP (Sprache) ────────────────────────────────
 function orbTap(){
   if(busy)return;
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){alert("Bitte Safari verwenden für Spracherkennung.");return;}
+  if(!SR){alert("Bitte Safari verwenden.");return;}
   busy=true;beep();setOrb("listening");
   const rec=new SR();
-  rec.lang="de-DE";rec.interimResults=false;rec.maxAlternatives=1;
+  rec.lang="de-DE";rec.interimResults=false;
   let done=false;
   rec.onresult=async e=>{
     done=true;
@@ -297,9 +404,8 @@ function orbTap(){
       document.getElementById("cr-txt").textContent=reply;
       document.getElementById("cr").className="cr show";
       speak(reply,()=>{busy=false;});
-    }catch{
-      const err="Entschuldigung, Verbindungsproblem. Bitte erneut tippen.";
-      document.getElementById("cr-txt").textContent=err;
+    }catch(err){
+      document.getElementById("cr-txt").textContent="Fehler: "+err.message;
       document.getElementById("cr").className="cr show";
       setOrb("idle");busy=false;
     }
@@ -309,8 +415,10 @@ function orbTap(){
   try{rec.start();}catch(e){busy=false;setOrb("idle");}
 }
 
+// ── AGENTS ───────────────────────────────────────────
 function renderAgents(){
   const list=document.getElementById("alist");
+  list.innerHTML="";
   AGENTS.forEach(a=>{
     const d=document.createElement("div");
     d.className="acard";d.id="ac-"+a.id;
@@ -355,8 +463,9 @@ async function loadAgent(id){
   try{
     const reply=await callClaude(a.sys,[{role:"user",content:a.msg}]);
     s.status="done";r.textContent=reply;
-  }catch{
-    s.status="idle";r.textContent="Fehler – erneut tippen.";
+  }catch(err){
+    s.status="idle";
+    r.textContent="⚠ Fehler: "+err.message+"\n\nBitte API Key prüfen (unten: Key zurücksetzen).";
   }
   updDot(id);
 }
@@ -373,7 +482,10 @@ async function askAgent(id){
     const reply=await callClaude(a.sys,S[id].history.slice(-6));
     S[id].history.push({role:"assistant",content:reply});
     r.textContent=reply;
-  }catch{r.textContent="Verbindungsfehler.";}
+  }catch(err){
+    r.textContent="⚠ Fehler: "+err.message;
+    S[id].history.pop();
+  }
 }
 
 function updDot(id){
@@ -382,8 +494,15 @@ function updDot(id){
   el.className="adot"+(s==="done"?" on":s==="loading"?" ld":"");
 }
 
-async function init(){
+// ── INIT ─────────────────────────────────────────────
+function startApp(){
+  document.getElementById("setup").classList.add("hidden");
+  document.getElementById("app").style.display="block";
+  checkIOS();
+  setInterval(tick,10000);tick();
   renderAgents();
+
+  // Auto-load briefing
   setTimeout(async()=>{
     S["briefing"].status="loading";updDot("briefing");
     try{
@@ -396,13 +515,23 @@ async function init(){
       document.getElementById("ac-briefing").classList.add("open");
       const h=new Date().getHours();
       const gr=h<12?"Guten Morgen":h<18?"Guten Tag":"Guten Abend";
-      speak(`${gr}. Ihr Tagesbriefing ist bereit. Tippen Sie den Orb um mit mir zu sprechen.`);
-    }catch{S["briefing"].status="idle";updDot("briefing");}
-  },900);
+      if(speechSynthesis.getVoices().length>0){
+        speak(`${gr}. Ihr Tagesbriefing ist bereit. Tippen Sie den Orb um mit mir zu sprechen.`);
+      }
+    }catch(err){
+      S["briefing"].status="idle";
+      const r=document.getElementById("ar-briefing");
+      if(r){r.textContent="⚠ "+err.message;r.className="aresp show";}
+      updDot("briefing");
+    }
+  },800);
 }
 
-if(speechSynthesis.getVoices().length>0){voices=speechSynthesis.getVoices();init();}
-else{speechSynthesis.onvoiceschanged=()=>{loadV();init();};setTimeout(init,1000);}
+// ── BOOT ─────────────────────────────────────────────
+if(checkKey()){
+  startApp();
+}
+// else: setup screen stays visible
 </script>
 </body>
 </html>
